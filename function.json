@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "documents",
+      "direction": "in",
+      "leaseCollectionName": "leases",
+      "connectionStringSetting": "COSMOS_CONNECTION_STRING",
+      "databaseName": "HuellaDB",
+      "collectionName": "Calculos",
+      "createLeaseCollectionIfNotExists": true
+    }
+  ]
+}
