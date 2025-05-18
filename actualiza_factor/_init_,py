@@ -1,0 +1,31 @@
+import logging
+import requests
+from azure.cosmos import CosmosClient
+import os
+from datetime import datetime
+
+def main(mytimer: func.TimerRequest) -> None:
+    logging.info("Ejecutando función programada para actualizar el factor de emisión")
+
+    # Paso 1: Obtener nuevo valor desde fuente externa (aquí ejemplo ficticio)
+    response = requests.get("https://api.datos.gob.mx/factor_emision")
+    if response.status_code == 200:
+        nuevo_factor = response.json().get("factor", 0.192)
+    else:
+        logging.error("No se pudo obtener el nuevo factor. Se mantiene el actual.")
+        return
+
+    # Paso 2: Guardar en Cosmos DB
+    cosmos_url = os.environ["COSMOS_URL"]
+    cosmos_key = os.environ["COSMOS_KEY"]
+    client = CosmosClient(cosmos_url, cosmos_key)
+    db = client.get_database_client("HuellaDB")
+    container = db.get_container_client("Config")
+
+    item = {
+        "id": "factor_emision",
+        "valor": nuevo_factor,
+        "ultima_actualizacion": datetime.utcnow().isoformat()
+    }
+    container.upsert_item(item)
+    logging.info(f"Factor actualizado a {nuevo_factor}")
